@@ -209,7 +209,7 @@ forecast = pd.Series(
 
     # Gráfica
 
-    historico_reciente = usd_forecast.tail(120).reset_index()
+historico_reciente = usd_forecast.tail(120).reset_index()
 
     fig_forecast = px.line(
 
