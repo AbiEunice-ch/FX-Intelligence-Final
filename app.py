@@ -642,59 +642,67 @@ else:
  
 
 
-# =========================================================
-# VOLATILIDAD
-# =========================================================
-st.subheader(
-   f"⚠️ Volatilidad — {moneda}"
-)
-fig_vol = px.line(
-   df_moneda,
-   x="tmb_FechaCarga",
-   y="Vola20",
-   title="Volatilidad móvil de 20 días",
-   labels={
-       "tmb_FechaCarga": "Fecha",
-       "Vola20": "Volatilidad"
-   }
-)
-fig_vol.update_layout(
-   hovermode="x unified"
-)
-st.plotly_chart(
-   fig_vol,
-   use_container_width=True
+# =========================
+# Indicadores de volatilidad
+# =========================
+
+usd_metricas = usd_forecast.copy()
+
+# Asegurar orden temporal
+usd_metricas["tmb_FechaCarga"] = pd.to_datetime(
+    usd_metricas["tmb_FechaCarga"],
+    errors="coerce"
 )
 
-# =========================================================
-# RÉGIMEN DE VOLATILIDAD
-# =========================================================
-st.subheader(
-   "🔎 Régimen de volatilidad"
+usd_metricas = usd_metricas.sort_values("tmb_FechaCarga")
+
+# Convertir volatilidad a numérico
+usd_metricas["Vola20"] = pd.to_numeric(
+    usd_metricas["Vola20"],
+    errors="coerce"
 )
-regimen_counts = (
-   df_moneda["Regimen_Volatilidad"]
-   .value_counts()
-   .reset_index()
-)
-regimen_counts.columns = [
-   "Regimen",
-   "Observaciones"
-]
-fig_regimen = px.bar(
-   regimen_counts,
-   x="Regimen",
-   y="Observaciones",
-   title="Distribución de regímenes de volatilidad",
-   labels={
-       "Regimen": "Régimen",
-       "Observaciones": "Número de observaciones"
-   }
-)
-st.plotly_chart(
-   fig_regimen,
-   use_container_width=True
-)
+
+# Obtener último valor válido de volatilidad
+volatilidades_validas = usd_metricas["Vola20"].dropna()
+
+if len(volatilidades_validas) > 0:
+    vola_actual = volatilidades_validas.iloc[-1]
+
+    # Calcular régimen usando cuantiles del propio USD
+    q25 = volatilidades_validas.quantile(0.25)
+    q75 = volatilidades_validas.quantile(0.75)
+
+    if vola_actual <= q25:
+        regimen_actual = "Bajo"
+    elif vola_actual >= q75:
+        regimen_actual = "Alto"
+    else:
+        regimen_actual = "Medio"
+
+    col1, col2 = st.columns(2)
+
+    col1.metric(
+        "Volatilidad 20 días",
+        f"{vola_actual:.2%}"
+    )
+
+    col2.metric(
+        "Régimen de volatilidad",
+        regimen_actual
+    )
+
+else:
+    col1, col2 = st.columns(2)
+
+    col1.metric(
+        "Volatilidad 20 días",
+        "N/D"
+    )
+
+    col2.metric(
+        "Régimen de volatilidad",
+        "N/D"
+    )
 
 # =========================================================
 # INFORMACIÓN DEL DATASET
