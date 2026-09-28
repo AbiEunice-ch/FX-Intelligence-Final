@@ -211,25 +211,25 @@ forecast = pd.Series(
 
 historico_reciente = usd_forecast.tail(120).reset_index()
 
-    fig_forecast = px.line(
+fig_forecast = px.line(
 
-        historico_reciente,
+    historico_reciente,
 
-        x="tmb_FechaCarga",
+    x="tmb_FechaCarga",
 
-        y="tmb_PrecioLimpio",
+    y="tmb_PrecioLimpio",
 
-        title="USD/MXN — Histórico y pronóstico",
+    title="USD/MXN — Histórico y pronóstico",
 
-        labels={
+    labels={
 
-            "tmb_FechaCarga": "Fecha",
+        "tmb_FechaCarga": "Fecha",
 
-            "tmb_PrecioLimpio": "Tipo de cambio"
+        "tmb_PrecioLimpio": "Tipo de cambio"
 
-        }
+    }
 
-    )
+)
 
     fig_forecast.add_scatter(
 
