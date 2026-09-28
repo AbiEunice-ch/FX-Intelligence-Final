@@ -231,31 +231,31 @@ fig_forecast = px.line(
 
 )
 
-    fig_forecast.add_scatter(
+fig_forecast.add_scatter(
 
-        x=forecast_df["Fecha"],
+    x=forecast_df["Fecha"],
 
-        y=forecast_df["Pronóstico"],
+    y=forecast_df["Pronóstico"],
 
-        mode="lines+markers",
+    mode="lines+markers",
 
-        name="Pronóstico"
+    name="Pronóstico"
 
-    )
+)
 
-    fig_forecast.update_layout(
+fig_forecast.update_layout(
 
-        hovermode="x unified"
+    hovermode="x unified"
 
-    )
+)
 
-    st.plotly_chart(
+st.plotly_chart(
 
-        fig_forecast,
+    fig_forecast,
 
-        use_container_width=True
+    use_container_width=True
 
-    )
+)
 
     # Métricas previamente obtenidas en el conjunto de prueba
 
