@@ -176,42 +176,36 @@ if moneda == "USD":
     )
 
     # Modelo ARIMA(0,1,0)
+# Se usa el vector de valores para evitar problemas
+# con la frecuencia del índice de fechas en Streamlit Cloud.
 
-    modelo_app = ARIMA(
+y_modelo = y.dropna().astype(float).to_numpy()
 
-        y,
+modelo_app = ARIMA(
+    y_modelo,
+    order=(0, 1, 0)
+)
 
-        order=(0, 1, 0)
+resultado_app = modelo_app.fit()
 
-    )
+# Pronóstico
+forecast_values = resultado_app.forecast(
+    steps=horizonte
+)
 
-    resultado_app = modelo_app.fit()
+# Fechas futuras de días hábiles
+ultima_fecha = pd.to_datetime(usd_forecast["tmb_FechaCarga"]).max()
 
-    # Pronóstico
+fechas_futuras = pd.bdate_range(
+    start=ultima_fecha + pd.Timedelta(days=1),
+    periods=horizonte
+)
 
-    forecast = resultado_app.forecast(
-
-        steps=horizonte
-
-    )
-
-    # Fechas futuras aproximadas de días hábiles
-
-    fechas_futuras = pd.bdate_range(
-
-        start=y.index[-1] + pd.Timedelta(days=1),
-
-        periods=horizonte
-
-    )
-
-    forecast_df = pd.DataFrame({
-
-        "Fecha": fechas_futuras,
-
-        "Pronóstico": forecast.to_numpy()
-
-    })
+# Convertir pronóstico a Serie con fechas
+forecast = pd.Series(
+    np.asarray(forecast_values),
+    index=fechas_futuras
+)
 
     # Gráfica
 
