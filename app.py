@@ -261,51 +261,51 @@ st.plotly_chart(
 
 col_f1, col_f2, col_f3 = st.columns(3)
 
-    with col_f1:
+with col_f1:
 
-        st.metric(
+    st.metric(
 
-            "Modelo",
+        "Modelo",
 
-            "ARIMA(0,1,0)"
-
-        )
-
-    with col_f2:
-
-        st.metric(
-
-            "MAE",
-
-            "0.0911 MXN"
-
-        )
-
-    with col_f3:
-
-        st.metric(
-
-            "RMSE",
-
-            "0.1307 MXN"
-
-        )
-
-    st.caption(
-
-        "Las métricas corresponden a la evaluación fuera de muestra "
-
-        "realizada previamente sobre el conjunto de prueba."
+        "ARIMA(0,1,0)"
 
     )
 
-    st.dataframe(
+with col_f2:
 
-        forecast_df,
+    st.metric(
 
-        use_container_width=True
+        "MAE",
+
+        "0.0911 MXN"
 
     )
+
+with col_f3:
+
+    st.metric(
+
+        "RMSE",
+
+        "0.1307 MXN"
+
+    )
+
+st.caption(
+
+    "Las métricas corresponden a la evaluación fuera de muestra "
+
+    "realizada previamente sobre el conjunto de prueba."
+
+)
+
+st.dataframe(
+
+    forecast_df,
+
+    use_container_width=True
+
+)
 
 else:
     st.info(
