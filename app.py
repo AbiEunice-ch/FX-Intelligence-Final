@@ -137,185 +137,123 @@ if moneda == "USD":
 
     from statsmodels.tsa.arima.model import ARIMA
 
-    import numpy as np
-
     # Serie USD
-
     usd_forecast = (
-
         df_moneda[
-
             ["tmb_FechaCarga", "tmb_PrecioLimpio"]
-
         ]
-
         .dropna()
-
         .sort_values("tmb_FechaCarga")
-
         .drop_duplicates("tmb_FechaCarga")
-
         .set_index("tmb_FechaCarga")
-
     )
 
     y = usd_forecast["tmb_PrecioLimpio"]
 
     # Horizonte de pronóstico
-
     horizonte = st.slider(
-
         "Horizonte de pronóstico (días)",
-
         min_value=1,
-
         max_value=20,
-
         value=5
-
     )
 
-    # Modelo ARIMA(0,1,0)
-# Se usa el vector de valores para evitar problemas
-# con la frecuencia del índice de fechas en Streamlit Cloud.
+    # Modelo ARIMA
+    y_modelo = y.dropna().astype(float).to_numpy()
 
-y_modelo = y.dropna().astype(float).to_numpy()
+    modelo_app = ARIMA(
+        y_modelo,
+        order=(0, 1, 0)
+    )
 
-modelo_app = ARIMA(
-    y_modelo,
-    order=(0, 1, 0)
-)
+    resultado_app = modelo_app.fit()
 
-resultado_app = modelo_app.fit()
+    # Pronóstico
+    forecast_values = resultado_app.forecast(
+        steps=horizonte
+    )
 
-# Pronóstico
-forecast_values = resultado_app.forecast(
-    steps=horizonte
-)
+    # Fechas futuras
+    ultima_fecha = usd_forecast.index.max()
 
-# Fechas futuras de días hábiles
-ultima_fecha = pd.to_datetime(usd_forecast["tmb_FechaCarga"]).max()
+    fechas_futuras = pd.bdate_range(
+        start=ultima_fecha + pd.Timedelta(days=1),
+        periods=horizonte
+    )
 
-fechas_futuras = pd.bdate_range(
-    start=ultima_fecha + pd.Timedelta(days=1),
-    periods=horizonte
-)
+    # DataFrame del pronóstico
+    forecast_df = pd.DataFrame({
+        "Fecha": fechas_futuras,
+        "Pronóstico": np.asarray(forecast_values)
+    })
 
-# Convertir pronóstico a Serie con fechas
-forecast = pd.Series(
-    np.asarray(forecast_values),
-    index=fechas_futuras
-)
+    # Histórico reciente
+    historico_reciente = usd_forecast.tail(120).reset_index()
 
     # Gráfica
-
-historico_reciente = usd_forecast.tail(120).reset_index()
-
-fig_forecast = px.line(
-
-    historico_reciente,
-
-    x="tmb_FechaCarga",
-
-    y="tmb_PrecioLimpio",
-
-    title="USD/MXN — Histórico y pronóstico",
-
-    labels={
-
-        "tmb_FechaCarga": "Fecha",
-
-        "tmb_PrecioLimpio": "Tipo de cambio"
-
-    }
-
-)
-
-fig_forecast.add_scatter(
-
-    x=forecast_df["Fecha"],
-
-    y=forecast_df["Pronóstico"],
-
-    mode="lines+markers",
-
-    name="Pronóstico"
-
-)
-
-fig_forecast.update_layout(
-
-    hovermode="x unified"
-
-)
-
-st.plotly_chart(
-
-    fig_forecast,
-
-    use_container_width=True
-
-)
-
-    # Métricas previamente obtenidas en el conjunto de prueba
-
-col_f1, col_f2, col_f3 = st.columns(3)
-
-with col_f1:
-
-    st.metric(
-
-        "Modelo",
-
-        "ARIMA(0,1,0)"
-
+    fig_forecast = px.line(
+        historico_reciente,
+        x="tmb_FechaCarga",
+        y="tmb_PrecioLimpio",
+        title="USD/MXN — Histórico y pronóstico",
+        labels={
+            "tmb_FechaCarga": "Fecha",
+            "tmb_PrecioLimpio": "Tipo de cambio"
+        }
     )
 
-with col_f2:
-
-    st.metric(
-
-        "MAE",
-
-        "0.0911 MXN"
-
+    fig_forecast.add_scatter(
+        x=forecast_df["Fecha"],
+        y=forecast_df["Pronóstico"],
+        mode="lines+markers",
+        name="Pronóstico"
     )
 
-with col_f3:
-
-    st.metric(
-
-        "RMSE",
-
-        "0.1307 MXN"
-
+    fig_forecast.update_layout(
+        hovermode="x unified"
     )
 
-st.caption(
+    st.plotly_chart(
+        fig_forecast,
+        use_container_width=True
+    )
 
-    "Las métricas corresponden a la evaluación fuera de muestra "
+    # Métricas
+    col_f1, col_f2, col_f3 = st.columns(3)
 
-    "realizada previamente sobre el conjunto de prueba."
+    with col_f1:
+        st.metric(
+            "Modelo",
+            "ARIMA(0,1,0)"
+        )
 
-)
+    with col_f2:
+        st.metric(
+            "MAE",
+            "0.0911 MXN"
+        )
 
-st.dataframe(
+    with col_f3:
+        st.metric(
+            "RMSE",
+            "0.1307 MXN"
+        )
 
-    forecast_df,
+    st.caption(
+        "Las métricas corresponden a la evaluación fuera de muestra "
+        "realizada previamente sobre el conjunto de prueba."
+    )
 
-    use_container_width=True
-
-)
+    st.dataframe(
+        forecast_df,
+        use_container_width=True
+    )
 
 else:
     st.info(
-
         "El módulo de pronóstico está implementado inicialmente "
-
         "para USD/MXN. Posteriormente se extenderá a EUR y GBP."
-
     )
- 
 
 # =========================================================
 
