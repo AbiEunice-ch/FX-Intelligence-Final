@@ -259,7 +259,7 @@ st.plotly_chart(
 
     # Métricas previamente obtenidas en el conjunto de prueba
 
-    col_f1, col_f2, col_f3 = st.columns(3)
+col_f1, col_f2, col_f3 = st.columns(3)
 
     with col_f1:
 
